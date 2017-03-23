@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
 #################################################################
-# <���傤����OneTimePad>
+# <じょうよわのOneTimePad write up>
 #
-# ����ȃR�[�h���Ȃ��ł������Ƃ������ق����ǂ��Ǝv���܂�
+# こんなコード見ないでここ↓とか見たほうが良いと思います
 #   https://twitter.com/elliptic_shiho/status/843664286215897088
 #################################################################
-# ���z�F
-#   tmp��257�r�b�g�ڂ�1�̂Ƃ�tmp�̉�����6�r�b�g�ڂ����]����B
-#   res=res^P �����s�����Ȃ����res�̋����Ԗڂ̃r�b�g�͂��ׂ�0�ɂȂ�i���ۂ��j�B
-#   �����ŋ����r�b�g��1�̂Ƃ�����P�Ƃ�XOR�������257�r�b�g�ڂ���𕜌�����B
-#   ������for���[�v�̍Ō��10�񂭂炢��res=res^P��1�ɂȂ��������r�b�g��
-#   257�r�b�g�ڂ܂łĂ��Ă悭������Ȃ��Ȃ�̂ŁA���̍Ō��10�񕪂��炢��
-#   �S�T�����čŏI�I�ɋ����Ԗڂ̃r�b�g�����ׂ�0�ɂȂ邩�ǂ����Ŕ��肷��B
+# 発想：
+#   tmpの257ビット目が1のときtmpの下から6ビット目が反転する。
+#   res=res^P を実行させなければresの偶数番目のビットはすべて0になる（っぽい）。
+#   そこで偶数ビットが1のときだけPとのXORを取って257ビット目より上を復元する。
+#   ただしforループの最後の10回くらいはres=res^Pで1になった偶数ビットが
+#   257ビット目までてきてよく分からなくなるので、その最後の10回分くらいは
+#   全探索して最終的に偶数番目のビットがすべて0になるかどうかで判定する。
 #################################################################
 
 from os import urandom
@@ -49,18 +49,18 @@ code1 = "af3fcc28377e7e983355096fd4f635856df82bbab61d2c50892d9ee5d913a07f"
 code2 = "630eb4dce274d29a16f86940f2f35253477665949170ed9e8c9e828794b5543c"
 code3 = "e913db07cbe4f433c7cdeaac549757d23651ebdccf69d7fbdfd5dc2829334d1b"
 
-extra_work = 10  # �S�T���͈�
+extra_work = 10  # 全探索範囲
 
-# process(m,k) �̒l���猳�� m^k �̒l�𐄑�����isqrt�炵���j
+# process(m,k) の値から元の m^k の値を推測する（sqrtらしい）
 def search_mk(val1):
   ret_value = 0
 
-  for n in range(1 << extra_work):  # �S�T���p�[�g
+  for n in range(1 << extra_work):  # 全探索パート
     P2 = P
     val = val1
     
     for j in range(256):
-      # a�̐�������Ȃ������i������ƃC�P�ĂȂ��j
+      # aの数が足りなかった（ちょっとイケてない）
       if(val & (P2 & 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa) and ((j & 1) == 0)):
         val = val ^ P2
       for k in range(extra_work):
